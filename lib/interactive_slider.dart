@@ -57,6 +57,8 @@ class InteractiveSlider extends StatefulWidget {
     this.startIconBuilder,
     this.centerIconBuilder,
     this.endIconBuilder,
+    this.secondaryProgress,
+    this.secondaryProgressController,
   })  : unfocusedOpacity = unfocusedOpacity ??
             (iconPosition == IconPosition.inside ? 1.0 : 0.4),
         assert(transitionCurvePeriod > 0.0),
@@ -109,6 +111,7 @@ class InteractiveSlider extends StatefulWidget {
 
   /// The normalized value the slider should be set to when it is first built
   final double initialProgress;
+  final double? secondaryProgress;
 
   /// A callback that provides the transformed slider progress (if min and max
   /// are set)
@@ -133,6 +136,10 @@ class InteractiveSlider extends StatefulWidget {
   /// Color to apply to any icons widgets in the start, end, or center icon
   /// positions
   final Color? iconColor;
+
+  /// Secondary progress color
+  // final Color? secondaryProgressColor;
+  final SecondaryProgressController? secondaryProgressController;
 
   /// Transformed slider value minimum
   final double min;
@@ -174,7 +181,7 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
   late final _height = ValueNotifier(widget.unfocusedHeight);
   late final _opacity = ValueNotifier(widget.unfocusedOpacity);
   late final _margin = ValueNotifier(widget.unfocusedMargin);
-  late final _progress =
+  late final ValueNotifier<double> _progress =
       widget.controller ?? ValueNotifier(widget.initialProgress);
   final _startIconKey = GlobalKey();
   final _endIconKey = GlobalKey();
@@ -272,6 +279,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         builder: _opacityBuilder,
         child: CustomPaint(
           painter: InteractiveSliderPainter(
+            secondaryColor:
+                widget.secondaryProgressController?.color ?? Colors.red,
+            secondaryProgress: widget.secondaryProgressController,
             progress: _progress,
             color: widget.foregroundColor ?? brightnessColor,
             gradient: widget.gradient,
@@ -375,6 +385,9 @@ class _InteractiveSliderState extends State<InteractiveSlider> {
         }
         _progress.value = (_progress.value + (details.delta.dx / sliderWidth))
             .clamp(0.0, 1.0);
+        print("progressXXX:   ${_progress.value}");
+        print(
+            "unClamed:   ${(_progress.value + (details.delta.dx / sliderWidth))}");
       },
       child: IconTheme(
         data: theme.iconTheme.copyWith(
